@@ -111,6 +111,39 @@ public class AvaliadorTestes
         Assert.Equal(new Dois(new Inteiro(1), new Logico(true)), Avaliador.Avaliar(termo).Valor);
     }
 
+    /// <summary>
+    /// O limite de PROFUNDIDADE existe separado do de passos, e isso me custou
+    /// uma integracao continua vermelha.
+    ///
+    /// Contar passos limita o TRABALHO e nao limita a PILHA: aplicacao aninhada
+    /// cresce a pilha a cada nivel, e o omega aninha para sempre. Com cinco mil
+    /// passos de limite, a mesma conta passava no Linux e no Windows e estourava
+    /// a pilha no macOS, derrubando o processo de teste inteiro em vez de falhar
+    /// um teste.
+    /// </summary>
+    [Fact]
+    public void OLimiteDeProfundidadeExisteSeparadoDoDePassos()
+    {
+        // com passos de sobra, quem segura e a profundidade
+        var r = Avaliador.Avaliar(Exemplos.Omega(), 1_000_000, fundo: 50);
+
+        Assert.True(r.SemFim);
+        Assert.True(r.Passos < 1_000, $"gastou {r.Passos} passos antes de parar");
+    }
+
+    /// <summary>
+    /// E ele nao atrapalha programa de verdade: duzentos niveis sao muito mais
+    /// do que qualquer termo deste repositorio precisa.
+    /// </summary>
+    [Fact]
+    public void OLimiteDeProfundidadeNaoAtrapalhaProgramaDeVerdade()
+    {
+        foreach (var (nome, termo) in Exemplos.QueTipam())
+            Assert.False(Avaliador.Avaliar(termo).SemFim, $"{nome} bateu no limite de profundidade");
+
+        Assert.False(Avaliador.Avaliar(Exemplos.TorreDePares(10)).SemFim);
+    }
+
     [Fact]
     public void OsPassosSaoContados()
     {
