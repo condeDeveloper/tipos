@@ -156,6 +156,14 @@ mais completa, e com o teste de ocorrência desligado a substituição pode mand
 crescimento aparecer como número, de dois em dois nós, em vez de aparecer como
 queda do processo.
 
+**Contar passos limita o trabalho e não limita a pilha, e a integração contínua
+descobriu isso por mim.** O avaliador tinha um limite de passos para o `omega`
+não rodar para sempre, e aplicação aninhada cresce a **pilha** a cada nível. Com
+cinco mil passos de limite, a mesma conta passava no Linux e no Windows e
+estourava a pilha no macOS, que tem pilha menor: o processo de teste inteiro
+caía, em vez de um teste falhar. São dois limites diferentes e os dois precisam
+existir.
+
 **O tipo da identidade na torre sai como `b -> b`, e não `a -> a`.** Usar um nome
 polimórfico instancia o esquema com variáveis frescas, então o número da variável
 não é parte da resposta. O teste que comparava a string estava testando o
