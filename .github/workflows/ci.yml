@@ -1,0 +1,56 @@
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        so: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # O juiz e o AVALIADOR. O sistema de tipos promete que programa bem tipado
+      # nao trava, e a unica maneira honesta de conferir isso e rodar os
+      # programas: gerar milhares deles sem nenhum cuidado, perguntar quais
+      # tipam e rodar TODOS.
+      #
+      # O sorteio e de um gerador congruente escrito no proprio repositorio, e
+      # nao do sorteio da biblioteca, porque a documentacao dele nao promete a
+      # mesma sequencia entre versoes nem entre sistemas, e esta CI roda em
+      # tres. Com o gerador proprio, a semente 7 da os mesmos programas nos
+      # tres.
+      - name: testes
+        run: dotnet test testes/Tipos.Testes/Tipos.Testes.csproj -c Release --nologo -v q
+
+      - name: o tipo principal, sem nenhuma anotacao
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- tipos
+
+      - name: programa bem tipado nao trava, contado
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- solidez
+
+      # A outra metade da historia: uma em cada cinco recusas e de um programa
+      # que rodava bem. O sistema separa o que ele CONSEGUE PROVAR que nao trava
+      # de todo o resto, e o resto tem muita coisa boa.
+      - name: quantos programas bons sao recusados
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- recusa
+
+      - name: o que o let-polimorfismo compra
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- polimorfismo
+
+      - name: o teste de ocorrencia e o tipo infinito
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- ocorrencia
+
+      - name: onde a inferencia fica cara
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- explosao
